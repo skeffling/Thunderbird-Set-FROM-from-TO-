@@ -19,12 +19,16 @@ function getDomain(email) {
 }
 
 async function getIdentityDomainMap() {
-  const identities = await browser.identities.list();
+  const { disabledAccounts = [] } = await browser.storage.local.get("disabledAccounts");
+  const accounts = await browser.accounts.list();
   const domainMap = {};
-  for (const identity of identities) {
-    const domain = getDomain(identity.email.toLowerCase());
-    if (domain && !domainMap[domain]) {
-      domainMap[domain] = identity;
+  for (const account of accounts) {
+    if (disabledAccounts.includes(account.id)) continue;
+    for (const identity of account.identities) {
+      const domain = getDomain(identity.email.toLowerCase());
+      if (domain && !domainMap[domain]) {
+        domainMap[domain] = identity;
+      }
     }
   }
   return domainMap;
