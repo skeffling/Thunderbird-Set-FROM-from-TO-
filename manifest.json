@@ -1,0 +1,30 @@
+{
+  "manifest_version": 2,
+  "name": "Set FROM: from TO:",
+  "description": "Automatically sets the From address to the address the original email was sent to, for catch-all mailboxes.",
+  "version": "1.1.0",
+  "author": "Skeffling",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "reply-from-to@addons.thunderbird.net",
+      "strict_min_version": "128.0"
+    }
+  },
+  "icons": {
+    "48": "icon-48.png",
+    "64": "icon-64.png",
+    "128": "icon-128.png"
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "compose_action": {
+    "default_title": "Revert From address to default",
+    "default_icon": "icon-48.png"
+  },
+  "permissions": [
+    "compose",
+    "messagesRead",
+    "accountsRead"
+  ]
+}
