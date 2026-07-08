@@ -18,8 +18,9 @@ function getDomain(email) {
   return parts.length === 2 ? parts[1] : null;
 }
 
-async function getIdentityDomainMap() {
-  const { disabledAccounts = [] } = await browser.storage.local.get("disabledAccounts");
+async function getMatchConfig() {
+  const { disabledAccounts = [], extraDomains = [] } =
+    await browser.storage.local.get(["disabledAccounts", "extraDomains"]);
   const accounts = await browser.accounts.list();
   const domainMap = {};
   for (const account of accounts) {
@@ -31,15 +32,25 @@ async function getIdentityDomainMap() {
       }
     }
   }
-  return domainMap;
+  // User-configured domains that aren't already backed by an account identity.
+  const extra = new Set(
+    extraDomains
+      .map((d) => d.toLowerCase().trim())
+      .filter((d) => d && !domainMap[d])
+  );
+  return { domainMap, extraDomains: extra };
 }
 
-function findMatchingRecipient(allRecipients, domainMap) {
+function findMatchingRecipient(allRecipients, domainMap, extraDomains) {
   for (const recipientRaw of allRecipients) {
     const email = extractEmail(recipientRaw);
     const domain = getDomain(email);
-    if (domain && domainMap[domain]) {
+    if (!domain) continue;
+    if (domainMap[domain]) {
       return { address: email, identity: domainMap[domain] };
+    }
+    if (extraDomains.has(domain)) {
+      return { address: email, identity: null };
     }
   }
   return null;
@@ -62,20 +73,22 @@ async function determineFromAddress(details) {
     ...(originalMsg.bccList || [])
   ];
 
-  const domainMap = await getIdentityDomainMap();
-  const match = findMatchingRecipient(allRecipients, domainMap);
+  const { domainMap, extraDomains } = await getMatchConfig();
+  const match = findMatchingRecipient(allRecipients, domainMap, extraDomains);
 
   if (!match) {
     return null;
   }
 
-  if (match.address === match.identity.email.toLowerCase()) {
+  // Nothing to do if the recipient is already this identity's own address.
+  if (match.identity && match.address === match.identity.email.toLowerCase()) {
     return null;
   }
 
   const currentFrom = details.from || "";
   const currentNameMatch = currentFrom.match(/^(.*?)\s*<[^>]+>$/);
-  const displayName = currentNameMatch ? currentNameMatch[1].trim() : match.identity.name;
+  const identityName = match.identity ? match.identity.name : "";
+  const displayName = currentNameMatch ? currentNameMatch[1].trim() : identityName;
   const fromAddress = displayName
     ? `${displayName} <${match.address}>`
     : match.address;

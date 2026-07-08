@@ -12,6 +12,9 @@
       margin-top: 0;
       font-size: 16px;
     }
+    h2.section {
+      margin-top: 24px;
+    }
     .account {
       margin: 8px 0;
     }
@@ -21,6 +24,39 @@
     .email {
       color: #666;
       margin-left: 4px;
+    }
+    .hint {
+      color: #666;
+      margin: 4px 0 12px;
+      max-width: 34em;
+    }
+    .domain {
+      display: flex;
+      align-items: center;
+      margin: 4px 0;
+    }
+    .domain .name {
+      min-width: 12em;
+    }
+    .remove {
+      border: none;
+      background: none;
+      color: #c33;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+      padding: 0 4px;
+    }
+    #add-domain {
+      margin-top: 8px;
+    }
+    #domain-input {
+      padding: 3px 6px;
+      min-width: 14em;
+    }
+    .error {
+      color: #c33;
+      margin-left: 8px;
     }
     .saved {
       color: #2a2;
@@ -36,7 +72,21 @@
 <body>
   <h2>Enable for accounts:</h2>
   <div id="accounts"></div>
-  <span id="saved" class="saved">Saved</span>
+
+  <h2 class="section">Additional reply domains:</h2>
+  <p class="hint">
+    Replies to addresses on these domains will also have their From address set
+    automatically, even when the domain isn't configured in one of your accounts.
+    Make sure the account you send from is allowed to send as these domains.
+  </p>
+  <div id="domains"></div>
+  <form id="add-domain">
+    <input type="text" id="domain-input" placeholder="example.com" autocomplete="off" />
+    <button type="submit">Add</button>
+    <span id="domain-error" class="error"></span>
+  </form>
+
+  <div><span id="saved" class="saved">Saved</span></div>
   <script src="options.js"></script>
 </body>
 </html>
