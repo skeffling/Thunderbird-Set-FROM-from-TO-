@@ -14,7 +14,7 @@ https://addons.thunderbird.net/en-US/thunderbird/addon/set-from-from-to/
 ## Features
 
 - Automatically sets the From address when replying
-- Only changes the email address, keeps your display name
+- Choose the display name used with the rewritten address: keep your account's display name (the default), repeat the email address as the display name, or send the plain email address with no display name at all
 - Revert button in the compose toolbar to switch back to your default address (only appears when the From was changed)
 - Per-account settings to enable or disable the addon for specific accounts (via Add-on Manager preferences)
 - Additional reply domains: add extra domains you own so replies to them get the same treatment, even when the domain isn't configured in a Thunderbird account

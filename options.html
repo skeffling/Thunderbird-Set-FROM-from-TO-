@@ -54,6 +54,14 @@
       padding: 3px 6px;
       min-width: 14em;
     }
+    .choice {
+      margin: 6px 0;
+    }
+    .example {
+      color: #666;
+      margin-left: 4px;
+      font-family: monospace;
+    }
     .error {
       color: #c33;
       margin-left: 8px;
@@ -72,6 +80,34 @@
 <body>
   <h2>Enable for accounts:</h2>
   <div id="accounts"></div>
+
+  <h2 class="section">Display name in the From address:</h2>
+  <p class="hint">
+    What the recipient sees in front of the rewritten address. Examples are for
+    an account called "Jane Doe" replying to an email sent to
+    bbb@domain.com.
+  </p>
+  <div class="choice">
+    <label>
+      <input type="radio" name="display-name-mode" value="keep" />
+      Keep my account's display name
+      <span class="example">Jane Doe &lt;bbb@domain.com&gt;</span>
+    </label>
+  </div>
+  <div class="choice">
+    <label>
+      <input type="radio" name="display-name-mode" value="address" />
+      Use the email address as the display name
+      <span class="example">"bbb@domain.com" &lt;bbb@domain.com&gt;</span>
+    </label>
+  </div>
+  <div class="choice">
+    <label>
+      <input type="radio" name="display-name-mode" value="none" />
+      No display name, plain email address only
+      <span class="example">bbb@domain.com</span>
+    </label>
+  </div>
 
   <h2 class="section">Additional reply domains:</h2>
   <p class="hint">

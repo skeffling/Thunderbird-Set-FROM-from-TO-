@@ -44,6 +44,23 @@ async function saveOptions() {
   showSaved();
 }
 
+// --- Display name mode ---
+
+async function loadDisplayNameMode() {
+  const { displayNameMode = "keep" } =
+    await browser.storage.local.get("displayNameMode");
+  const radios = document.querySelectorAll('input[name="display-name-mode"]');
+  for (const radio of radios) {
+    radio.checked = radio.value === displayNameMode;
+    radio.addEventListener("change", saveDisplayNameMode);
+  }
+}
+
+async function saveDisplayNameMode(event) {
+  await browser.storage.local.set({ displayNameMode: event.target.value });
+  showSaved();
+}
+
 function showSaved() {
   const saved = document.getElementById("saved");
   saved.classList.add("show");
@@ -133,4 +150,5 @@ async function removeDomain(domain) {
 document.getElementById("add-domain").addEventListener("submit", addDomain);
 
 loadOptions();
+loadDisplayNameMode();
 renderDomains();
