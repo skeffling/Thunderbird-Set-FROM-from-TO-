@@ -19,8 +19,15 @@ function getDomain(email) {
 }
 
 async function getMatchConfig() {
-  const { disabledAccounts = [], extraDomains = [] } =
-    await browser.storage.local.get(["disabledAccounts", "extraDomains"]);
+  const {
+    disabledAccounts = [],
+    extraDomains = [],
+    displayNameMode = "keep"
+  } = await browser.storage.local.get([
+    "disabledAccounts",
+    "extraDomains",
+    "displayNameMode"
+  ]);
   const accounts = await browser.accounts.list();
   const domainMap = {};
   for (const account of accounts) {
@@ -38,7 +45,29 @@ async function getMatchConfig() {
       .map((d) => d.toLowerCase().trim())
       .filter((d) => d && !domainMap[d])
   );
-  return { domainMap, extraDomains: extra };
+  return { domainMap, extraDomains: extra, displayNameMode };
+}
+
+// Builds the From value, deciding what display name (if any) goes in front of
+// the matched address:
+//   "keep"    - reuse the display name already on the reply (the identity's
+//               name), e.g. Jane Doe <bbb@domain.com>
+//   "address" - repeat the matched address as the display name,
+//               e.g. "bbb@domain.com" <bbb@domain.com>
+//   "none"    - send the bare address, e.g. bbb@domain.com
+function buildFromAddress(match, currentFrom, displayNameMode) {
+  if (displayNameMode === "none") {
+    return match.address;
+  }
+  if (displayNameMode === "address") {
+    return `"${match.address}" <${match.address}>`;
+  }
+
+  const from = typeof currentFrom === "string" ? currentFrom : "";
+  const currentNameMatch = from.match(/^(.*?)\s*<[^>]+>$/);
+  const identityName = match.identity ? match.identity.name : "";
+  const displayName = currentNameMatch ? currentNameMatch[1].trim() : identityName;
+  return displayName ? `${displayName} <${match.address}>` : match.address;
 }
 
 function findMatchingRecipient(allRecipients, domainMap, extraDomains) {
@@ -73,7 +102,7 @@ async function determineFromAddress(details) {
     ...(originalMsg.bccList || [])
   ];
 
-  const { domainMap, extraDomains } = await getMatchConfig();
+  const { domainMap, extraDomains, displayNameMode } = await getMatchConfig();
   const match = findMatchingRecipient(allRecipients, domainMap, extraDomains);
 
   if (!match) {
@@ -85,13 +114,7 @@ async function determineFromAddress(details) {
     return null;
   }
 
-  const currentFrom = details.from || "";
-  const currentNameMatch = currentFrom.match(/^(.*?)\s*<[^>]+>$/);
-  const identityName = match.identity ? match.identity.name : "";
-  const displayName = currentNameMatch ? currentNameMatch[1].trim() : identityName;
-  const fromAddress = displayName
-    ? `${displayName} <${match.address}>`
-    : match.address;
+  const fromAddress = buildFromAddress(match, details.from, displayNameMode);
 
   return { fromAddress, identity: match.identity };
 }
